@@ -18,13 +18,17 @@ public class CrownScript : MonoBehaviour {
 
 	private GameObject player;
 
-	private GameObject wireFront;
-	private Mesh wireFrontMesh;
-	private Vector3[] wireFrontOrigVerts;
 
-	private GameObject wireRear;
-	private Mesh wireRearMesh;
-	private Vector3[] wireRearOrigVerts;
+	private LineRenderer wireFrontLine;
+	private LineRenderer wireRearLine;
+
+	private int wireNumSegments = 40;
+	private float wireSegmentLength = 40.0F;
+
+	private float wireFrontStart = 30.0F;
+	private float wireRearStart = 40.0F;
+
+
 
 	private float origCapsuleZ;
 
@@ -34,23 +38,58 @@ public class CrownScript : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-		wireFront = GameObject.Find ("WireFront");
-		wireRear = GameObject.Find ("WireRear");
+
+
+		wireFrontLine = GameObject.Find ("WireFrontLine").GetComponent<LineRenderer>();
+
+		wireRearLine = GameObject.Find ("WireRearLine").GetComponent<LineRenderer>();
+
+		initWireLines();
 
 		player = GameObject.Find ("OVRPlayerController");
 
 //		wireFront.renderer.material.SetColor ("_Color", Color.red);
 //		wireRear.renderer.material.SetColor ("_Color", Color.green);
 
-		wireFrontMesh = wireFront.GetComponent<MeshFilter> ().mesh;
-		wireFrontOrigVerts = wireFrontMesh.vertices.Clone () as Vector3[];
-
-		wireRearMesh = wireRear.GetComponent<MeshFilter> ().mesh;
-		wireRearOrigVerts = wireRearMesh.vertices.Clone () as Vector3[];
+//		wireFrontMesh = wireFront.GetComponent<MeshFilter> ().mesh;
+//		wireFrontOrigVerts = wireFrontMesh.vertices.Clone () as Vector3[];
+//
+//		wireRearMesh = wireRear.GetComponent<MeshFilter> ().mesh;
+//		wireRearOrigVerts = wireRearMesh.vertices.Clone () as Vector3[];
 
 		origCapsuleZ = gameObject.transform.position.z;
 	}
-	
+
+	void initWireLines() {
+
+		//front line
+		int i = 0;
+		float z = wireFrontStart;
+		wireFrontLine.SetVertexCount (wireNumSegments);
+
+		while (i < wireNumSegments) {
+
+			Vector3 newPos = new Vector3(0.0F,0.0F, z);
+			wireFrontLine.SetPosition(i, newPos);
+			z -= wireSegmentLength;
+			i++;
+		}
+
+		//rear line
+		i = 0;
+		z = wireRearStart;
+		wireRearLine.SetVertexCount (wireNumSegments);
+
+		while (i < wireNumSegments) {
+			
+			Vector3 newPos = new Vector3(0.0F,0.0F, z);
+			wireRearLine.SetPosition(i, newPos);
+			z += wireSegmentLength;
+			i++;
+		}
+
+	}
+
 	// Update is called once per frame
 	void Update () {
 
@@ -93,47 +132,37 @@ public class CrownScript : MonoBehaviour {
 
 
 		//move wire front
-		Vector3[] newVerts = wireFrontOrigVerts.Clone () as Vector3[];
-		float percentMotion;
+		int i = 0;
+		float z = wireFrontStart;
+		float percentDone = 1.0F;
+		float percentDecrement = 1.0F / wireNumSegments;
 		float newWireX;
 		float newWireY;
-		int count = 0;
-		int vertLength = newVerts.Length;
-		Vector3 vert;
-		while( count < vertLength ) {
+		while (i < wireNumSegments) {
 
-			vert = newVerts[count];
-			percentMotion = (vert.z + 6.0F) / 8.0F;
-			newWireX = centerX + vert.x + (newX * rotateRadius * percentMotion);
-			newWireY = centerY + vert.y + (newY * rotateRadius * percentMotion);
-
-			newVerts[count].x = newWireX;
-			newVerts[count].y = newWireY;
-			newVerts[count].z = vert.z + zOffset;
-			count++;
+			newWireX = centerX + (newX * rotateRadius * percentDone);
+			newWireY = centerY + (newY * rotateRadius * percentDone);
+			Vector3 newPos = new Vector3(newWireX, newWireY, z);
+			wireFrontLine.SetPosition(i, newPos);
+			z -= wireSegmentLength;
+			percentDone -= percentDecrement;
+			i++;
 		}
-
-		wireFrontMesh.vertices = newVerts;
-
 
 		//move wire rear
-		newVerts = wireRearOrigVerts.Clone () as Vector3[];
-		count = 0;
-		vertLength = newVerts.Length;
-
-		while( count < vertLength ) {			
-			vert = newVerts[count];
-			percentMotion = (vert.z + 6.0F) / 8.0F;
-			newWireX = -centerX + vert.x + (-newX * rotateRadius * percentMotion);
-			newWireY = centerY + vert.y + (newY * rotateRadius * percentMotion);
+		i = 0;
+		z = wireRearStart;
+		percentDone = 1.0F;
+		while (i < wireNumSegments) {
 			
-			newVerts[count].x = newWireX;
-			newVerts[count].y = newWireY;
-			newVerts[count].z = vert.z - (zOffset/3.0F);
-			count++;
+			newWireX = centerX + (newX * rotateRadius * percentDone);
+			newWireY = centerY + (newY * rotateRadius * percentDone);
+			Vector3 newPos = new Vector3(newWireX, newWireY, z);
+			wireRearLine.SetPosition(i, newPos);
+			z += wireSegmentLength;
+			percentDone -= percentDecrement;
+			i++;
 		}
-		
-		wireRearMesh.vertices = newVerts;
 
 
 		//increase radians!
