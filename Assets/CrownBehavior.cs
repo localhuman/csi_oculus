@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class CrownScript : MonoBehaviour {
+public class CrownBehavior : MonoBehaviour {
 
 
 
@@ -22,8 +22,8 @@ public class CrownScript : MonoBehaviour {
 	private LineRenderer wireFrontLine;
 	private LineRenderer wireRearLine;
 
-	private int wireNumSegments = 40;
-	private float wireSegmentLength = 40.0F;
+	private int wireNumSegments = 100;
+	private float wireSegmentLength = 16.0F;
 
 	private float wireFrontStart = 30.0F;
 	private float wireRearStart = 40.0F;
@@ -48,14 +48,6 @@ public class CrownScript : MonoBehaviour {
 
 		player = GameObject.Find ("OVRPlayerController");
 
-//		wireFront.renderer.material.SetColor ("_Color", Color.red);
-//		wireRear.renderer.material.SetColor ("_Color", Color.green);
-
-//		wireFrontMesh = wireFront.GetComponent<MeshFilter> ().mesh;
-//		wireFrontOrigVerts = wireFrontMesh.vertices.Clone () as Vector3[];
-//
-//		wireRearMesh = wireRear.GetComponent<MeshFilter> ().mesh;
-//		wireRearOrigVerts = wireRearMesh.vertices.Clone () as Vector3[];
 
 		origCapsuleZ = gameObject.transform.position.z;
 	}
@@ -138,10 +130,16 @@ public class CrownScript : MonoBehaviour {
 		float percentDecrement = 1.0F / wireNumSegments;
 		float newWireX;
 		float newWireY;
+
+		float zRadians;
+		float zCos;
 		while (i < wireNumSegments) {
 
-			newWireX = centerX + (newX * rotateRadius * percentDone);
-			newWireY = centerY + (newY * rotateRadius * percentDone);
+
+			zRadians = percentDone * twoPi;
+			zCos = Mathf.Cos(zRadians);
+			newWireX = centerX + (newX * rotateRadius * percentDone * zCos);
+			newWireY = centerY + (newY * rotateRadius * percentDone * zCos);
 			Vector3 newPos = new Vector3(newWireX, newWireY, z);
 			wireFrontLine.SetPosition(i, newPos);
 			z -= wireSegmentLength;
@@ -154,7 +152,12 @@ public class CrownScript : MonoBehaviour {
 		z = wireRearStart;
 		percentDone = 1.0F;
 		while (i < wireNumSegments) {
-			
+
+			zRadians = percentDone * twoPi;
+			zCos = Mathf.Cos(zRadians);
+			newWireX = centerX + (newX * rotateRadius * percentDone * zCos);
+			newWireY = centerY + (newY * rotateRadius * percentDone * zCos);
+
 			newWireX = centerX + (newX * rotateRadius * percentDone);
 			newWireY = centerY + (newY * rotateRadius * percentDone);
 			Vector3 newPos = new Vector3(newWireX, newWireY, z);

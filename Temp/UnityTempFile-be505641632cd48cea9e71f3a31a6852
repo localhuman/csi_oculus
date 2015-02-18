@@ -45,8 +45,8 @@
 -define:ENABLE_PROFILER
 -define:UNITY_EDITOR
 -define:UNITY_EDITOR_OSX
-'Assets/CSharpPlane.cs'
-'Assets/CrownScript.cs'
+'Assets/CalciumBehavior.cs'
+'Assets/CrownBehavior.cs'
 'Assets/OVR/Scripts/OVRCameraRig.cs'
 'Assets/OVR/Scripts/OVRCommon.cs'
 'Assets/OVR/Scripts/OVRDisplay.cs'
