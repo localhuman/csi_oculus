@@ -16,34 +16,74 @@ public class CalciumBehavior : MonoBehaviour {
 	public int resX = 128; // 2 minimum
 	public int resZ = 64;
 
-	public float radiusX = 10.0F;
-	public float radiusY = 60.0F;
+	public float radiusX = 50.0F;
+	public float radiusY = 50.0F;
 
 	//noise vars
-	public int pixHeight;
-	public int pixWidth;
 	public float xOrg;
 	public float yOrg;
-	public float perlinHeightX = 30.0F;
+	public float perlinHeightX = 40.0F;
 	public float perlinHeightZ = 40.0F;
-	public float scale = 30.0F;
+	public float perlinScaleX = 40.0F;
+	public float perlinScaleZ = 80.0F;
+
+	public float pheightModifier = 0.03F;
+	public float pheightModifier2 = 0.1F;
+	public float pheightModifier3 = 0.005F;
+
+	public float minPHeight = 32.0F;
+
+
+	public float rheightModifier = 0.1F;
+	public float rheightModifier2 = 0.04F;
+	public float rheightModifier3 = 0.01F;
+
+	public float crownRadiusOffset = -14.0F;
+
+	public float maxRHeight = 57.0F;
 
 	public float xCosDiv = 2.0F;
 
 
 	private Vector3[] origVerts;
 
+
+	public CrownBehavior crown;
+
+	public float[] perlinHeights;
+	public float[] radiiHeights;
+
+	private int crownZIndex=64;
+
 	void Start () {
 	
-
+		int i;
 		// You can change that line to provide another MeshFilter
 		filter = gameObject.GetComponent<MeshFilter> ();
 		mesh = filter.mesh;
 		vertices = mesh.vertices;
 		origVerts = vertices.Clone () as Vector3[];
 
-		pixHeight = 64;
-		pixWidth = 128;
+		//initialize perlin height array
+		perlinHeights = new float[resX];
+		float startPerlinHeight = minPHeight;
+		for(i =0; i< resX; i++) {
+			perlinHeights[i] = startPerlinHeight;
+			if( i > 27 && startPerlinHeight < perlinHeightX ) {
+				startPerlinHeight+=1.0F;
+			}
+		}
+
+		//initialize radius height array
+		radiiHeights = new float[resX];
+		float startRadiiHeight = maxRHeight;
+		for (i=0; i < resX; i++) {
+			radiiHeights[i] = startRadiiHeight;
+
+			if( i > 27  && startRadiiHeight > radiusX) {
+				startRadiiHeight -=1.0F;
+			}
+		}
 
 		generateNoise ();
 
@@ -55,113 +95,162 @@ public class CalciumBehavior : MonoBehaviour {
 		GetComponent<MeshCollider>().sharedMesh = null;
 		GetComponent<MeshCollider>().sharedMesh = mesh;
 
+
 	}
 
 	// Update is called once per frame
 	void Update () {
-//		generateNoise ();
 
-		if (Input.GetKey (KeyCode.Alpha8)) {
-			generateNoise();
-			mesh.RecalculateBounds();
-			mesh.RecalculateNormals ();
-			mesh.Optimize();
-			
-			//update the physics collider
-			GetComponent<MeshCollider>().sharedMesh = null;
-			GetComponent<MeshCollider>().sharedMesh = mesh;
 
-		}
+		crownZIndex = Mathf.FloorToInt((crown.zOffset + 25.0F) / 0.39F );
+		if (crownZIndex < 0) crownZIndex = 0;
+		if (crownZIndex > 127) crownZIndex = 127;
+
+		generateNoise();
+		mesh.RecalculateBounds();
+		mesh.RecalculateNormals ();
+//		mesh.Optimize();
+		
+		//update the physics collider
+//		GetComponent<MeshCollider>().sharedMesh = null;
+//		GetComponent<MeshCollider>().sharedMesh = mesh;
 	}
 
 
 	void generateNoise () {
 
-		//deforming mesh with perlin noise to simpulate calcium buildup
+		//modify perlin heights based on crown z position
+		//also modify radius height
+		float pheightCenter = perlinHeights [crownZIndex];
+		int j;
+		float perlinProgress;
+		float radiusProgress;
+		float totalRadiusMovement = maxRHeight - radiusX;
+		float beforeRadiusProg = 1.0F;
+		float afterRadiusProg = 1.0F;
 
-		Debug.Log ("Generating noise!");
+		for (j =0; j< resX; j++) {
+			if( j == crownZIndex ) {
+
+
+				if( perlinHeights[j] > minPHeight) {
+					perlinHeights[j]-= pheightModifier;
+				}
+
+				if( radiiHeights[j] < maxRHeight ) {
+					radiiHeights[j] += rheightModifier;
+				}
+				crown.rotateRadius = radiiHeights[j] + crownRadiusOffset;
+
+
+			}
+
+			if( j == crownZIndex - 1 ) {
+				if( perlinHeights[j] > minPHeight) {
+					perlinHeights[j]-= pheightModifier2;
+				}
+
+				if( radiiHeights[j] < maxRHeight ) {
+					radiiHeights[j] += rheightModifier2;
+				}
+
+				beforeRadiusProg = (radiiHeights[j] - radiusX) / totalRadiusMovement;
+				
+
+			}
+
+//			if( j == crownZIndex - 2 ) {
+//				if( perlinHeights[j] > minPHeight) {
+//					perlinHeights[j]-= pheightModifier3;
+//				}
+//				if( radiiHeights[j] < maxRHeight ) {
+//					radiiHeights[j] += rheightModifier3;
+//				}
+//			}
+
+			if( j == crownZIndex + 1 ) {
+				if( perlinHeights[j] > minPHeight) {
+					perlinHeights[j]-= pheightModifier2;
+				}
+				if( radiiHeights[j] < maxRHeight ) {
+					radiiHeights[j] += rheightModifier2;
+				}
+				afterRadiusProg = (radiiHeights[j] - radiusX) / totalRadiusMovement;
+			}
+
+//			if( j == crownZIndex + 2 ) {
+//				if( perlinHeights[j] > minPHeight) {
+//					perlinHeights[j]-= pheightModifier3;
+//				}
+//				if( radiiHeights[j] < maxRHeight ) {
+//					radiiHeights[j] += rheightModifier3;
+//				}
+//			}
+
+			if( beforeRadiusProg < 1.0F || afterRadiusProg < 1.0F ) {
+				crown.pHolder.renderer.enabled=true;
+			} else {
+				crown.pHolder.renderer.enabled=false;
+			}
+		}
+
+
+
+		//deforming mesh with perlin noise to simpulate calcium buildup
 
 		Vector3[] newVerts = origVerts.Clone () as Vector3[];
 		int i = 0;
-		
+
+		float lasty = 0.0F;
+		int yIndex = 0;
+		bool start = true;
+
+		Vector3 vert;
+		float ratio;
+		float ex;
+		float zee;
+
+		float xCoord;
+		float zCoord;
+
+		float sample;
+		float newPerlinHeight;
+		float newRadiusHeight;
+
 		while (i < newVerts.Length) {
+
+			vert = newVerts[i];
+
+			if( start ){
+				start=false;
+				lasty = vert.y;
+			}
+
+			ratio = (vert.x + 10.0F)/20.0F;
 			
-			Vector3 vert = newVerts[i];
-			
-			float ratio = (vert.x + 10.0F)/20.0F;
-			
-			var ex = Mathf.Cos( ratio *  2.0F * Mathf.PI);
-			var why = Mathf.Sin( ratio * 2.0F *  Mathf.PI );
-			
-			
-			var xCoord = xOrg + vert.x / width * scale;
-			var yCoord = yOrg + vert.y / length * scale;
-			var sample = Mathf.PerlinNoise(xCoord, yCoord);
-			
-			newVerts[i].x = (ex * radiusX) - (sample * perlinHeightX);
-			newVerts[i].z = (why * radiusY) - (sample * perlinHeightZ);
+			ex = Mathf.Cos( ratio *  2.0F * Mathf.PI);
+			zee = Mathf.Sin( ratio * 2.0F *  Mathf.PI );
+
+
+			xCoord = xOrg + vert.x / width * perlinScaleX;
+			zCoord = yOrg + vert.y / length * perlinScaleZ;
+
+			sample = Mathf.PerlinNoise(xCoord, zCoord) - 0.5F;
+
+			newPerlinHeight = perlinHeights[yIndex];
+			newRadiusHeight = radiiHeights[yIndex];
+
+			newVerts[i].x = (ex * newRadiusHeight) - (sample * newPerlinHeight);
+			newVerts[i].z = (zee * newRadiusHeight) - (sample * newPerlinHeight);
 			i++;
+
+			if( vert.y != lasty ) {
+				lasty = vert.y;
+				yIndex++;
+			}
+
 		}
-		
 		mesh.vertices = newVerts;
-
-
-
-//		noiseTex = new Texture2D (resZ,resX);
-//		pix = new Color[resZ * resX];
-//		Debug.Log ("pix length:");
-//		Debug.Log (pix.Length);
-//
-//
-//		Material vesselMat = gameObject.renderer.materials[1];
-//		vesselTexture = vesselMat.mainTexture as Texture2D;
-//		newVesselTexture = new Texture2D (1024, 512, TextureFormat.ARGB32, false);
-//		vesselPixels = vesselTexture.GetPixels32 ();
-//		Debug.Log ("Current Pixels Length:");
-//		Debug.Log (vesselPixels.Length);
-//		Color32[] newPixels = vesselPixels.Clone() as Color32[];
-//		Color32 currentPixel;
-//
-//		for (float x = 0.0F; x < 1024; x++) {
-//			for (float y = 0.0F; y < 512; y++) {
-//				// Get a sample from the corresponding position in the noise plane
-//				// and create a greyscale pixel from it.
-//				var xCoord = xOrg + x / 1024.0F * scale2;
-//				var yCoord = yOrg + y / 512.0F * scale2;
-//				float sample = Mathf.PerlinNoise(xCoord, yCoord);
-//
-//				if( sample > .5F) {
-//					sample = 0.0F;
-//				} else {
-//					sample = 1.0F;
-//				}
-//
-//				var index = ((int) x * 512) + (int) y;
-//
-//				currentPixel = vesselPixels[index]; 
-//				int alpha = Mathf.RoundToInt(sample * 255);
-//				byte alphabit = (byte)alpha;
-//				currentPixel.a = alphabit;
-//		
-//		//			newPixel = new Color( currentPixel.r, currentPixel.g, currentPixel.b, sample);
-//		//			newPixels[i] = newPixel;
-//		//			Debug.Log(string.Format("X: {0} Z: {1} NOISE: {2}", vert.x, vert.y, sample));
-//				newPixels[index] = currentPixel;
-//
-//			}
-//		}
-//
-//		Debug.Log("New Pixels Length:");
-//		Debug.Log (newPixels.Length);
-//		newVesselTexture.SetPixels32 (newPixels);
-//		newVesselTexture.Apply ();
-//		
-//		gameObject.renderer.materials[1].mainTexture = newVesselTexture;
-
-//
-//		gameObject.renderer.material.SetTexture ("_MainTex", noiseTex);
-//		noiseTex.SetPixels(pix);
-//		noiseTex.Apply();
 
 	}
 

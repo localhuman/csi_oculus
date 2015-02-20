@@ -31,9 +31,16 @@ public class CrownBehavior : MonoBehaviour {
 
 
 	private float origCapsuleZ;
-
+	
 	public float zOffset = 0.0F;
 	public float zOffsetIncrement = 0.1F;
+
+
+	public float playerOffsetX = 10.0F;
+	public float playerOffsetY = 12.0F;
+	public float playerOffsetZ = 140.0F;
+
+	public GameObject pHolder;
 
 	// Use this for initialization
 	void Start () {
@@ -48,6 +55,8 @@ public class CrownBehavior : MonoBehaviour {
 
 		player = GameObject.Find ("OVRPlayerController");
 
+		pHolder = GameObject.Find ("ParticleHolder");
+		pHolder.renderer.enabled = true;
 
 		origCapsuleZ = gameObject.transform.position.z;
 	}
@@ -111,6 +120,8 @@ public class CrownBehavior : MonoBehaviour {
 			player.transform.position = new Vector3(0.0F, 0.0F, 0.0F);				
 		}
 
+
+
 		//move crown
 		float newX = Mathf.Cos (radians);
 		float newY = Mathf.Sin (radians);
@@ -122,6 +133,20 @@ public class CrownBehavior : MonoBehaviour {
 		gameObject.transform.position = currentPosition;
 
 
+		//rotate particles
+		float angle = Mathf.Atan2 (currentPosition.y, currentPosition.x);
+		angle = ((angle * 180.0F) / Mathf.PI) + 360.0F;
+		Quaternion currentRot = pHolder.transform.rotation;
+		currentRot.y = angle;
+		pHolder.transform.rotation = currentRot;
+
+		Vector3 playerPos = player.transform.position;
+		playerPos.y = playerOffsetY;
+		playerPos.x = playerOffsetX;
+		float targetZ = currentPosition.z - playerOffsetZ;
+		playerPos.z = (playerPos.z + targetZ)/2.0F;
+		player.transform.position = playerPos;
+
 
 		//move wire front
 		int i = 0;
@@ -130,6 +155,7 @@ public class CrownBehavior : MonoBehaviour {
 		float percentDecrement = 1.0F / wireNumSegments;
 		float newWireX;
 		float newWireY;
+		float newWireZ;
 
 		float zRadians;
 		float zCos;
@@ -140,7 +166,8 @@ public class CrownBehavior : MonoBehaviour {
 			zCos = Mathf.Cos(zRadians);
 			newWireX = centerX + (newX * rotateRadius * percentDone * zCos);
 			newWireY = centerY + (newY * rotateRadius * percentDone * zCos);
-			Vector3 newPos = new Vector3(newWireX, newWireY, z);
+			newWireZ = z + (zOffset * 56.0F);
+			Vector3 newPos = new Vector3(newWireX, newWireY, newWireZ);
 			wireFrontLine.SetPosition(i, newPos);
 			z -= wireSegmentLength;
 			percentDone -= percentDecrement;
@@ -160,7 +187,9 @@ public class CrownBehavior : MonoBehaviour {
 
 			newWireX = centerX + (newX * rotateRadius * percentDone);
 			newWireY = centerY + (newY * rotateRadius * percentDone);
-			Vector3 newPos = new Vector3(newWireX, newWireY, z);
+			newWireZ = z + (zOffset * 56.0F);
+
+			Vector3 newPos = new Vector3(newWireX, newWireY, newWireZ);
 			wireRearLine.SetPosition(i, newPos);
 			z += wireSegmentLength;
 			percentDone -= percentDecrement;
