@@ -25,9 +25,7 @@ limitations under the License.
 #endif
 
 using UnityEngine;
-#if USE_NEW_GUI
 using UnityEngine.UI;
-# endif
 using System.Collections;
 
 //-------------------------------------------------------------------------------------

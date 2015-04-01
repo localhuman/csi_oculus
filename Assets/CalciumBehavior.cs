@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.IO.Ports;
+
+
 
 public class CalciumBehavior : MonoBehaviour {
 
@@ -55,8 +58,11 @@ public class CalciumBehavior : MonoBehaviour {
 
 	private int crownZIndex=64;
 
+
+
 	void Start () {
 	
+
 		int i;
 		// You can change that line to provide another MeshFilter
 		filter = gameObject.GetComponent<MeshFilter> ();
@@ -114,6 +120,10 @@ public class CalciumBehavior : MonoBehaviour {
 		//update the physics collider
 //		GetComponent<MeshCollider>().sharedMesh = null;
 //		GetComponent<MeshCollider>().sharedMesh = mesh;
+
+
+
+
 	}
 
 
@@ -187,11 +197,11 @@ public class CalciumBehavior : MonoBehaviour {
 //				}
 //			}
 
-			if( beforeRadiusProg < 1.0F || afterRadiusProg < 1.0F ) {
-				crown.pHolder.renderer.enabled=true;
-			} else {
-				crown.pHolder.renderer.enabled=false;
-			}
+//			if( beforeRadiusProg < 1.0F || afterRadiusProg < 1.0F ) {
+//				crown.pHolder.renderer.enabled=true;
+//			} else {
+//				crown.pHolder.renderer.enabled=false;
+//			}
 		}
 
 

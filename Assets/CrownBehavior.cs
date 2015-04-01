@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.IO.Ports;
 
 public class CrownBehavior : MonoBehaviour {
 
@@ -12,7 +13,7 @@ public class CrownBehavior : MonoBehaviour {
 	
 	private float radians = 0.0F;
 
-	public float radianIncrement = 0.05F;
+	public float radianIncrement = 0.25F;
 
 	private float twoPi = Mathf.PI * 2.0F;
 
@@ -42,9 +43,17 @@ public class CrownBehavior : MonoBehaviour {
 
 	public GameObject pHolder;
 
+
+	private SerialPort stream;
+	private int arduinoSpeed = 1;
+	private int arduinoCrownLocation = 0;
+
+
 	// Use this for initialization
 	void Start () {
 
+		stream = new SerialPort ("/dev/tty.usbmodem1421", 9600);
+		stream.Open ();
 
 
 		wireFrontLine = GameObject.Find ("WireFrontLine").GetComponent<LineRenderer>();
@@ -55,8 +64,10 @@ public class CrownBehavior : MonoBehaviour {
 
 		player = GameObject.Find ("OVRPlayerController");
 
-		pHolder = GameObject.Find ("ParticleHolder");
-		pHolder.renderer.enabled = true;
+//		pHolder = GameObject.Find ("pHolder");
+		pHolder.GetComponent<Renderer> ().enabled = true;
+
+		Debug.Log ("PHOLDER: ", pHolder);
 
 		origCapsuleZ = gameObject.transform.position.z;
 	}
@@ -120,6 +131,56 @@ public class CrownBehavior : MonoBehaviour {
 			player.transform.position = new Vector3(0.0F, 0.0F, 0.0F);				
 		}
 
+		try {
+
+			string items = stream.ReadLine ();
+			int ison = int.Parse(items.Split (',')[0]);
+			int speend = int.Parse(items.Split (',')[1]);
+			int crownLocation = int.Parse (items.Split (',') [2]);
+
+
+			if( ison < 1 ) {
+
+				radianIncrement=0.0f;
+
+			} else {
+
+
+				if (speend != arduinoSpeed) {
+					arduinoSpeed = speend;
+					
+					switch( arduinoSpeed ) {
+					case 1:
+						radianIncrement = 0.25f;
+						break;
+					case 2:
+						radianIncrement = 0.30f;
+						break;
+						
+					case 3:
+						radianIncrement = 0.35f;
+						break;
+						
+					default:
+						radianIncrement = 0.25f;
+						break;
+					}
+				}
+
+
+			}
+
+
+			arduinoCrownLocation = crownLocation;
+
+			float nCrownZ = ( arduinoCrownLocation * 2.4F ) - 1200.0F; 
+//			nCrownZ-=20.0F;
+			zOffset = nCrownZ;
+			Debug.Log(zOffset);
+
+		} catch( System.Exception e) {
+			Debug.Log("Exception reading stream");
+		}
 
 
 		//move crown
@@ -129,13 +190,13 @@ public class CrownBehavior : MonoBehaviour {
 		Vector3 currentPosition = gameObject.transform.position;
 		currentPosition.x = (newX * rotateRadius) + centerX;
 		currentPosition.y = (newY * rotateRadius) + centerY;
-		currentPosition.z = origCapsuleZ + (zOffset*56.0F);
+		currentPosition.z = zOffset;
 		gameObject.transform.position = currentPosition;
 
 
 		//rotate particles
 		float angle = Mathf.Atan2 (currentPosition.y, currentPosition.x);
-		angle = ((angle * 180.0F) / Mathf.PI) + 360.0F;
+		angle = ((angle * 180.0F) / Mathf.PI) + 360.0F;		
 		Quaternion currentRot = pHolder.transform.rotation;
 		currentRot.y = angle;
 		pHolder.transform.rotation = currentRot;
@@ -208,8 +269,5 @@ public class CrownBehavior : MonoBehaviour {
 
 	}
 
-//	void onTriggerEnter(Collider other) {
-//
-//		Debug.Log ("ON Trigger Enter crown");
-//	}
+
 }

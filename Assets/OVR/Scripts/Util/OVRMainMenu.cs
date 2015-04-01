@@ -30,7 +30,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 #if USE_NEW_GUI
-using UnityEngine.UI;
+//using UnityEngine.UI;
 # endif
 
 //-------------------------------------------------------------------------------------
@@ -329,8 +329,8 @@ public class OVRMainMenu : MonoBehaviour
 			Cursor.visible = false; 
 			Cursor.lockState = CursorLockMode.Locked;
 #else
-			Screen.showCursor = false; 
-			Screen.lockCursor = true;
+//			Screen.showCursor = false; 
+//			Screen.lockCursor = true;
 #endif
 		}
 		
