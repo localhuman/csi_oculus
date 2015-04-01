@@ -129,7 +129,7 @@ function Update () {
 
 	//		Debug.Log('created noise pixels');
 	// Copy the pixel data to the texture and load it into the GPU.
-		gameObject.renderer.material.SetTexture('_MainTex',noiseTex);
+		gameObject.GetComponent.<Renderer>().material.SetTexture('_MainTex',noiseTex);
 
 		noiseTex.SetPixels(pix);
 		noiseTex.Apply();

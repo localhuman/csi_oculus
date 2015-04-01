@@ -67,7 +67,6 @@ public class CrownBehavior : MonoBehaviour {
 //		pHolder = GameObject.Find ("pHolder");
 		pHolder.GetComponent<Renderer> ().enabled = true;
 
-		Debug.Log ("PHOLDER: ", pHolder);
 
 		origCapsuleZ = gameObject.transform.position.z;
 	}
@@ -142,6 +141,7 @@ public class CrownBehavior : MonoBehaviour {
 			if( ison < 1 ) {
 
 				radianIncrement=0.0f;
+				arduinoSpeed=0;
 
 			} else {
 
@@ -176,7 +176,7 @@ public class CrownBehavior : MonoBehaviour {
 			float nCrownZ = ( arduinoCrownLocation * 2.4F ) - 1200.0F; 
 //			nCrownZ-=20.0F;
 			zOffset = nCrownZ;
-			Debug.Log(zOffset);
+//			Debug.Log(zOffset);
 
 		} catch( System.Exception e) {
 			Debug.Log("Exception reading stream");
